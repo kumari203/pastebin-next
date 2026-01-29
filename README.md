@@ -1,36 +1,249 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pastebin‑Next 📝
 
-## Getting Started
+A full‑stack **Pastebin‑like application** built with **Next.js App Router**, **Prisma**, and **SQLite**, supporting **time‑based expiry** and **view‑limited pastes**.
+This project was built as part of a **job preliminary / technical evaluation** to demonstrate real‑world backend and full‑stack skills.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🚀 Live Demo
+
+🔗 **Deployed on Vercel:**
+[https://pastebin-next.vercel.app](https://pastebin-next.vercel.app)
+
+*(Replace with your actual Vercel URL if different)*
+
+---
+
+## ✨ Features
+
+* ✅ Create a paste containing arbitrary text
+* 🔗 Receive a **shareable URL** for each paste
+* ⏳ **Time‑based expiry (TTL)** support
+* 👀 **View‑count limit** support
+* ❌ Automatic unavailability when:
+
+  * Paste expires
+  * View limit is exceeded
+* 📄 Server‑rendered paste view page
+* 🧪 REST API with proper validation and error handling
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+* **Next.js 16** (App Router)
+* React
+* Tailwind CSS
+
+### Backend
+
+* Next.js API Routes
+* Prisma ORM
+* SQLite (for simplicity & demo)
+
+### Tooling
+
+* pnpm
+* TypeScript
+* Vercel (deployment)
+
+---
+
+## 📂 Project Structure
+
+```
+app/
+├── page.tsx                  # Home page (Create Paste UI)
+├── pastes/
+│   └── [id]/
+│       └── page.tsx          # Paste view page
+├── api/
+│   ├── healthz/route.ts      # Health check endpoint
+│   └── pastes/route.ts       # Create & fetch pastes API
+
+lib/
+└── prisma.ts                 # Prisma client singleton
+
+prisma/
+├── schema.prisma             # Database schema
+└── dev.db                    # SQLite database
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔌 API Endpoints
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🩺 Health Check
 
-## Learn More
+**GET** `/api/healthz`
 
-To learn more about Next.js, take a look at the following resources:
+Response:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```json
+{ "ok": true }
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+### ➕ Create a Paste
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**POST** `/api/pastes`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+#### Request Body
+
+```json
+{
+  "content": "string",
+  "ttl_seconds": 60,
+  "max_views": 5
+}
+```
+
+#### Validation Rules
+
+* `content` **required**, non‑empty string
+* `ttl_seconds` optional, integer ≥ 1
+* `max_views` optional, integer ≥ 1
+
+#### Success Response (200)
+
+```json
+{
+  "id": "cmkxxxx",
+  "url": "https://pastebin-next.vercel.app/pastes/cmkxxxx"
+}
+```
+
+#### Error Response (400)
+
+```json
+{ "error": "content is required" }
+```
+
+---
+
+### 📥 Fetch a Paste (API)
+
+**GET** `/api/pastes/:id`
+
+#### Success Response (200)
+
+```json
+{
+  "content": "Hello world",
+  "remaining_views": 4,
+  "expires_at": "2026-01-01T00:00:00.000Z"
+}
+```
+
+Notes:
+
+* `remaining_views` is `null` if unlimited
+* `expires_at` is `null` if no TTL
+* Each successful fetch **counts as a view**
+
+#### Unavailable Cases (404)
+
+* Paste does not exist
+* Paste expired
+* View limit exceeded
+
+Response:
+
+```json
+{ "error": "Not found" }
+```
+
+---
+
+## 🗄️ Database Schema (Prisma)
+
+```prisma
+model Paste {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+  maxViews  Int?
+  views     Int      @default(0)
+}
+```
+
+---
+
+## ▶️ Running Locally
+
+### 1️⃣ Clone the repository
+
+```bash
+git clone https://github.com/<your-username>/pastebin-next.git
+cd pastebin-next
+```
+
+### 2️⃣ Install dependencies
+
+```bash
+pnpm install
+```
+
+### 3️⃣ Setup Prisma
+
+```bash
+pnpm prisma migrate dev
+```
+
+### 4️⃣ Start development server
+
+```bash
+pnpm dev
+```
+
+Open: **[http://localhost:3000](http://localhost:3000)**
+
+---
+
+## 🧪 Example cURL Command
+
+```bash
+curl -X POST http://localhost:3000/api/pastes \
+  -H "Content-Type: application/json" \
+  -d '{"content":"Hello","ttl_seconds":10,"max_views":2}'
+```
+
+---
+
+## 🧠 Design Decisions
+
+* **SQLite** chosen for simplicity and portability
+* **Prisma** for type‑safe database access
+* **Server Components** for paste rendering
+* **REST API** instead of GraphQL for clarity
+* Defensive error handling to prevent invalid access
+
+---
+
+## 📌 Future Improvements
+
+* Authentication (private pastes)
+* Syntax highlighting
+* Paste editing
+* Password‑protected pastes
+* PostgreSQL support
+
+---
+
+GitHub: [https://github.com/kumari203](https://github.com/kumari203)
+
+---
+
+## ✅ Purpose
+
+This project was created to demonstrate:
+
+* Full‑stack application design
+* API development & validation
+* Database modeling
+* Production deployment readiness
+
