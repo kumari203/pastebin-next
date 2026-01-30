@@ -7,7 +7,7 @@ A full‑stack **Pastebin‑like application** built with **Next.js App Router**
 ## 🚀 Live Demo
 
 🔗 **Deployed on Vercel:**
-(https://pastebin-next-brq5-7957tc8sb-rokkam-ratna-kumaris-projects.vercel.app/)
+(https://pastebin-next-brq5-7h9wow3km-rokkam-ratna-kumaris-projects.vercel.app/)
 
 ---
 
