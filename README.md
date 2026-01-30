@@ -1,16 +1,13 @@
 # Pastebin‑Next 📝
 
 A full‑stack **Pastebin‑like application** built with **Next.js App Router**, **Prisma**, and **SQLite**, supporting **time‑based expiry** and **view‑limited pastes**.
-This project was built as part of a **job preliminary / technical evaluation** to demonstrate real‑world backend and full‑stack skills.
 
 ---
 
 ## 🚀 Live Demo
 
 🔗 **Deployed on Vercel:**
-[https://pastebin-next.vercel.app](https://pastebin-next.vercel.app)
-
-*(Replace with your actual Vercel URL if different)*
+(https://pastebin-next-brq5-7957tc8sb-rokkam-ratna-kumaris-projects.vercel.app/)
 
 ---
 
